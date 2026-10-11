@@ -16,7 +16,8 @@ webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE_KEY);
 async function rest(path, { method = 'GET', body, prefer } = {}){
   const res = await fetch(`${URL_}/rest/v1/${path}`, {
     method,
-    headers: { apikey: KEY, Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) },
+    // Les nouvelles clés « sb_publishable_ » ne sont pas des JWT : elles passent uniquement dans l'en-tête apikey.
+    headers: { apikey: KEY, ...(KEY.startsWith('sb_') ? {} : { Authorization: `Bearer ${KEY}` }), 'Content-Type': 'application/json', ...(prefer ? { Prefer: prefer } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) throw new Error(`${method} ${path} → ${res.status} ${await res.text()}`);
