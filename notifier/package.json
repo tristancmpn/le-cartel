@@ -1,0 +1,7 @@
+{
+  "name": "le-cartel-notifier",
+  "private": true,
+  "type": "module",
+  "scripts": { "send": "node send.mjs" },
+  "dependencies": { "web-push": "3.6.7" }
+}
