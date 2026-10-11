@@ -1,0 +1,40 @@
+name: Rappels
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'   # toutes les 15 min (GitHub peut avoir quelques minutes de retard)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write   # pour garder ce workflow actif (GitHub coupe les workflows planifiés après 60 jours sans commit)
+
+concurrency:
+  group: rappels
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: notifier/package-lock.json
+      - run: npm ci --omit=dev
+        working-directory: notifier
+      - run: node --test
+        working-directory: notifier
+      - run: node send.mjs
+        working-directory: notifier
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+      - name: Garder le workflow actif
+        if: always()
+        continue-on-error: true
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/notify.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}
