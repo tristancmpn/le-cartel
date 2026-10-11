@@ -64,8 +64,9 @@ const av = (id, sm) => {const m=M(id);return `<span class="av${sm?' sm':''}" sty
 const names = ids => ids.map(i => M(i).name).join(' et ');
 
 // ---------- Supabase ----------
-const configured = SUPABASE_URL && SUPABASE_ANON_KEY;
-const sb = configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+// window.__cartelTestClient : fausse base utilisée uniquement par tools/dev.html
+const configured = !!(window.__cartelTestClient || (SUPABASE_URL && SUPABASE_ANON_KEY));
+const sb = window.__cartelTestClient || (configured ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null);
 
 async function fetchAll(table, select, build){
   const out = [];
